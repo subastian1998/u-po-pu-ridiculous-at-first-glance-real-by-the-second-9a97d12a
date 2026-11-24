@@ -11,13 +11,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 const source = join(here, "entry.txt");
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 
-// The gate only accepts UTF-8 text of 1 to 200 characters, not only
-// whitespace, so refuse to emit anything outside that range instead of
-// shipping an entry the scorer would mark invalid.
+// The gate only accepts one line of UTF-8 text of 1 to 200 characters,
+// not only whitespace, so refuse to emit anything outside that range
+// instead of shipping an entry the scorer would mark invalid.
 const text = readFileSync(source, "utf8");
-const chars = [...text.trim()].length;
+const trimmed = text.trim();
+const chars = [...trimmed].length;
 if (chars < 1 || chars > 200) {
   throw new Error(`entry.txt must hold 1 to 200 characters, got ${chars}`);
+}
+if (/[\r\n]/.test(trimmed)) {
+  throw new Error("entry.txt must hold a single line, no line breaks");
 }
 
 mkdirSync(outDir, { recursive: true });
